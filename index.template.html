@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ไปทางนี้ได้ไหม | ถนนน้ำท่วม กทม.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=block" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EEF0; --surface:#FFFFFF; --surface-2:#F4F7F8; --ink:#15242B; --muted:#56676F; --line:#CFD9DD;
+  --avoid:#B3261E; --avoid-ink:#FFFFFF; --avoid-soft:#F8E1DE;
+  --caution:#F2B705; --caution-ink:#2A2100; --caution-soft:#FCF0C7;
+  --pass:#1E7A4C; --pass-ink:#FFFFFF; --pass-soft:#DCEFE4;
+  --none:#6E7F87; --none-ink:#FFFFFF; --none-soft:#E3E9EB;
+  --water:#2F6F8F; --map-land:#F1F4F2; --map-road:#D4DADB; --map-mw:#BFC7C9; --canal:#8DB8CC; --river:#7FB0C8;
+  --focus:#2F6F8F;
+  --sans:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --sign:"Chakra Petch","IBM Plex Sans Thai",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101719; --surface:#182226; --surface-2:#1E2A2F; --ink:#E6EDEF; --muted:#9AAAB1; --line:#2C3A40;
+    --avoid-soft:#3A1A17; --caution-soft:#3A3113; --pass-soft:#16301F; --none-soft:#253135;
+    --map-land:#172023; --map-road:#2B373C; --map-mw:#3A474C; --canal:#2D5569; --river:#336A84; --focus:#8CC4DD;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101719; --surface:#182226; --surface-2:#1E2A2F; --ink:#E6EDEF; --muted:#9AAAB1; --line:#2C3A40;
+  --avoid-soft:#3A1A17; --caution-soft:#3A3113; --pass-soft:#16301F; --none-soft:#253135;
+  --map-land:#172023; --map-road:#2B373C; --map-mw:#3A474C; --canal:#2D5569; --river:#336A84; --focus:#8CC4DD;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+.answer{scroll-margin-top:calc(var(--barh,56px) + 12px)}
+@media (max-width:599px){.fresh-in{font-size:13px;gap:4px 12px;padding:6px 12px}.src.fresh-date{display:none}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;display:inline-block;width:1em;overflow:hidden;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:"liga";font-feature-settings:"liga";font-variation-settings:"FILL" 1,"wght" 500,"opsz" 24;vertical-align:-4px;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* freshness bar */
+.fresh{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.fresh-in{max-width:1180px;margin:0 auto;padding:8px 16px;display:flex;gap:8px 20px;flex-wrap:wrap;align-items:center;font-size:14px}
+.src{display:flex;align-items:center;gap:6px}
+.src b{font-weight:600}
+.age{padding:1px 8px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+.age.fresh-ok{background:var(--pass-soft);color:var(--pass)}
+.age.fresh-aging{background:var(--caution-soft);color:#7A5B00}
+.age.fresh-stale{background:var(--avoid-soft);color:var(--avoid)}
+:root[data-theme="dark"] .age.fresh-aging{color:#F2C94C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .age.fresh-aging{color:#F2C94C}}
+.stale-banner{display:none;background:var(--avoid);color:#fff}
+.stale-banner.on{display:block}
+.stale-banner .fresh-in{font-size:14px;gap:10px;flex-wrap:nowrap;align-items:flex-start}
+
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:24px}
+@media (min-width:960px){.wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
+
+h1{font-family:var(--sign);font-weight:700;font-size:clamp(34px,6vw,48px);line-height:1.1;margin:4px 0 6px;letter-spacing:0}
+.lede{margin:0 0 18px;color:var(--muted);max-width:52ch}
+
+/* search */
+.search{position:relative}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:2px solid var(--ink);border-radius:10px;padding:0 6px 0 12px;min-height:54px}
+.search-box input{flex:1;border:0;background:transparent;font-size:18px;padding:12px 0;min-width:0}
+.search-box input:focus{outline:none}
+.search-box:focus-within{box-shadow:0 0 0 3px var(--focus)}
+.icon-btn{border:0;background:transparent;border-radius:8px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.icon-btn:hover{background:var(--surface-2)}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--line);border-radius:10px;list-style:none;margin:0;padding:4px;z-index:15;max-height:320px;overflow:auto;display:none;box-shadow:0 8px 24px rgba(10,30,40,.14)}
+.sugg.on{display:block}
+.sugg li{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer}
+.sugg li[aria-selected="true"],.sugg li:hover{background:var(--surface-2)}
+.sugg .d{margin-left:auto;color:var(--muted);font-size:13px}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.quick span{font-size:14px;color:var(--muted);align-self:center;margin-right:2px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:14px;cursor:pointer}
+.chip:hover{border-color:var(--ink)}
+.chip.loc{display:inline-flex;align-items:center;gap:6px;border-color:var(--water);color:var(--water);font-weight:600}
+.chip.loc .ms{font-size:18px}
+.chip.loc[aria-busy="true"]{opacity:.6;cursor:progress}
+.near{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.near li button{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;display:grid;grid-template-columns:6px 1fr auto;gap:12px;align-items:center;padding:9px 0;text-align:left;cursor:pointer}
+.near li button:hover{background:var(--surface-2)}
+.near .bar{align-self:stretch;background:var(--c);border-radius:3px}
+.near small{display:block;color:var(--muted);font-size:13px}
+.near .dist{font-weight:600;font-size:14px;white-space:nowrap}
+.locnote{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+
+/* answer */
+.answer{margin-top:22px;background:var(--surface);border-radius:12px;border:1px solid var(--line);overflow:hidden}
+.plate{display:flex;align-items:center;gap:16px;padding:18px 20px;color:var(--pl-ink);background:var(--pl)}
+.plate .ms{font-size:44px;font-variation-settings:"FILL" 1,"wght" 600,"opsz" 48}
+.plate .word{font-family:var(--sign);font-weight:700;font-size:clamp(40px,8vw,58px);line-height:1}
+.plate .who{font-size:15px;opacity:.92;margin-top:6px}
+.plate .who strong{font-weight:600}
+.st-avoid{--pl:var(--avoid);--pl-ink:var(--avoid-ink);--soft:var(--avoid-soft);--c:var(--avoid)}
+.st-caution{--pl:var(--caution);--pl-ink:var(--caution-ink);--soft:var(--caution-soft);--c:#9A7400}
+.st-pass{--pl:var(--pass);--pl-ink:var(--pass-ink);--soft:var(--pass-soft);--c:var(--pass)}
+.st-none{--pl:var(--none);--pl-ink:var(--none-ink);--soft:var(--none-soft);--c:var(--none)}
+.plate.stale{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 10px,transparent 10px 20px)}
+.ans-body{padding:14px 20px 18px}
+.why{margin:0 0 12px}
+.mix{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--muted);margin:0 0 12px}
+.mix i{font-style:normal;display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c);display:inline-block;flex:none}
+.conflict{display:flex;gap:10px;background:var(--caution-soft);border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:14px}
+.conflict .ms{color:#9A7400}
+.ev{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.ev li{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.ev .bar{width:6px;border-radius:3px;background:var(--c);grid-row:span 2}
+.ev .t{font-weight:500}
+.ev .t small{font-weight:400;color:var(--muted);margin-left:6px}
+.ev .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:1px 7px;font-size:12.5px;font-weight:600;border:1px solid transparent}
+.tag .ms{font-size:15px;vertical-align:-3px}
+.tag.confirmed{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.tag.reported{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.tag.crowd{background:transparent;border-color:var(--line);color:var(--ink)}
+.tag.approx{background:transparent;border:1px dashed var(--muted);color:var(--muted)}
+.ev .note{grid-column:2;font-size:13px;color:var(--muted);margin:2px 0 0}
+.nodata p{margin:0 0 10px}
+.nodata p:last-child{margin:0}
+
+/* summary + lists */
+.overview{margin-top:26px}
+h2{font-family:var(--sign);font-weight:700;font-size:24px;line-height:1.2;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 14px;font-size:15px}
+.tally{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.tally button{border:0;border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;background:var(--soft);color:var(--ink);border-left:6px solid var(--c)}
+.tally b{display:block;font-family:var(--sign);font-size:28px;line-height:1.1}
+.tally span{font-size:14px}
+.tally button[aria-pressed="true"]{outline:2px solid var(--c);outline-offset:1px}
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.list li+li{border-top:1px solid var(--line)}
+.row{width:100%;border:0;background:transparent;display:grid;grid-template-columns:6px 1fr auto;gap:12px;align-items:center;padding:10px 14px 10px 0;text-align:left;cursor:pointer}
+.row:hover{background:var(--surface-2)}
+.row .bar{align-self:stretch;background:var(--c)}
+.row .nm{font-weight:500}
+.row .ds{display:block;font-size:13px;color:var(--muted)}
+.row .rt{display:flex;gap:6px;align-items:center;color:var(--muted)}
+.row .rt .ms{font-size:18px}
+.more{margin-top:10px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer}
+
+/* map */
+.mapcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+@media (min-width:960px){.mapcol{position:sticky;top:64px}}
+.maphead{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.maphead h2{font-size:18px;margin:0}
+.maphead .ctrl{margin-left:auto;display:flex;gap:4px}
+.maphead .ctrl button{border:1px solid var(--line);background:var(--surface);width:36px;height:36px;border-radius:8px;cursor:pointer;display:grid;place-items:center}
+.mapbox{position:relative;aspect-ratio:800/620;touch-action:none;background:var(--map-land)}
+#map{display:block;width:100%;height:100%;cursor:grab;user-select:none}
+#map.drag{cursor:grabbing}
+.legend{padding:10px 14px 14px;display:grid;gap:8px;font-size:13px;color:var(--muted)}
+.legend .lr{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
+.legend svg{vertical-align:middle}
+.maplabel{font-family:var(--sans);fill:var(--muted);paint-order:stroke;stroke:var(--map-land);stroke-width:3px;stroke-linejoin:round}
+.maplabel.clab{fill:var(--water);font-style:italic}
+.hit{cursor:pointer}
+
+/* criteria */
+.criteria{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.criteria h2{font-size:20px}
+.cgrid{display:grid;gap:18px}
+@media (min-width:760px){.cgrid{grid-template-columns:1fr 1fr}}
+.criteria table{border-collapse:collapse;width:100%;font-size:14px}
+.tablewrap{overflow-x:auto}
+.criteria th,.criteria td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.criteria th{font-weight:600;color:var(--muted)}
+.criteria p,.criteria li{font-size:14px;color:var(--muted);max-width:70ch}
+.criteria ul{padding-left:18px;margin:6px 0}
+.demo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.demo button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.assume{display:inline-block;font-size:12px;font-weight:600;border:1px dashed var(--muted);border-radius:6px;padding:0 6px;margin-left:6px;color:var(--muted)}
+@media (prefers-reduced-motion: no-preference){.answer{transition:opacity .15s}}
+/* phase 2: trend */
+.trend{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;border-radius:6px;padding:1px 7px}
+.trend .ms{font-size:16px;vertical-align:-3px}
+.tr-better,.tr-cleared{color:var(--pass);background:var(--pass-soft)}
+.tr-worse,.tr-new{color:var(--avoid);background:var(--avoid-soft)}
+.tr-same{color:var(--muted);background:var(--surface-2)}
+.tr-na{color:var(--muted);background:transparent;border:1px dashed var(--line);font-weight:500}
+.spark{vertical-align:middle}
+.trendline{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin:0 0 12px;font-size:14px;color:var(--muted)}
+/* phase 2: my routes */
+.routes{margin:0 0 22px}
+.routes-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.routes-head h2{font-size:22px;margin:0}
+.routes-head .hint{font-size:13px;color:var(--muted)}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn .ms{font-size:18px;vertical-align:-3px}
+.rempty{background:var(--surface);border:1px dashed var(--muted);border-radius:12px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.rempty p{margin:0;flex:1 1 240px;font-size:15px}
+.rempty p span{color:var(--muted);font-size:14px}
+.rcards{display:grid;gap:10px}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rtop{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;border:0;background:transparent;text-align:left;padding:0;cursor:pointer}
+.rsign{background:var(--pl);color:var(--pl-ink);align-self:stretch;min-width:92px;display:grid;place-items:center;padding:10px 8px;text-align:center}
+.rsign .w{font-family:var(--sign);font-weight:700;font-size:22px;line-height:1.1}
+.rsign .ms{font-size:22px}
+.rsign>span{display:grid;justify-items:center;gap:4px}
+.rsign.stale{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 8px,transparent 8px 16px)}
+.rname{padding:10px 0}
+.rname b{font-weight:600;display:block}
+.rname span{font-size:13.5px;color:var(--muted)}
+.rchev{padding-right:12px;color:var(--muted)}
+.rcard[aria-expanded="true"] .rchev .ms{transform:rotate(180deg)}
+.rpath{display:flex;flex-wrap:wrap;align-items:center;gap:4px 2px;padding:0 14px 12px}
+.rpath .seg{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;padding:2px 8px;border-radius:6px;background:var(--soft);border-left:4px solid var(--c)}
+.rpath .ms{font-size:16px;color:var(--muted)}
+.rdetail{border-top:1px solid var(--line);padding:4px 14px 12px}
+.rdetail .rr{display:grid;grid-template-columns:6px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);width:100%;background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer}
+.rdetail .rr .bar{align-self:stretch;background:var(--c);border-radius:3px}
+.rdetail .rr small{display:block;color:var(--muted);font-size:13px}
+.ractions{display:flex;gap:8px;justify-content:flex-end;padding-top:10px}
+.editor{background:var(--surface);border:2px solid var(--ink);border-radius:12px;padding:14px 16px;display:grid;gap:10px}
+.editor label{font-size:14px;font-weight:500}
+.editor input[type=text]{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);font-size:16px}
+.editor .picker{position:relative}
+.echips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:32px}
+.echips .ec{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:3px 4px 3px 8px;background:var(--soft);border-left:4px solid var(--c);font-size:14px}
+.echips .ec button{border:0;background:transparent;cursor:pointer;width:24px;height:24px;display:grid;place-items:center;border-radius:4px;color:var(--muted)}
+.echips .empty{font-size:13.5px;color:var(--muted)}
+.editor .row2{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.editor .err{color:var(--avoid);font-size:13.5px;margin:0}
+.store-note{font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+</style>
+</head>
+<body>
+<div class="fresh" id="freshbar">
+  <div class="fresh-in" id="freshrow"></div>
+  <div class="stale-banner" id="stalebanner"><div class="fresh-in"><span class="ms">history_toggle_off</span><span id="staletext"></span></div></div>
+</div>
+
+<main class="wrap">
+  <section>
+    <h1>ไปทางนี้ได้ไหม</h1>
+    <p class="lede">พิมพ์ถนนที่จะใช้ แล้วดูคำตอบก่อนออกเดินทาง ทุกคำตอบบอกที่มาของข้อมูลและเวลาที่วัด</p>
+
+    <section class="routes" aria-labelledby="routes-h">
+      <div class="routes-head"><h2 id="routes-h">เส้นทางของฉัน</h2><span class="hint" id="routes-hint"></span></div>
+      <div id="routes"></div>
+      <p class="store-note">บันทึกไว้ในเบราว์เซอร์นี้เท่านั้น ไม่ได้ส่งไปที่ใด</p>
+    </section>
+
+    <div class="search" role="search">
+      <label for="q" class="sr">ชื่อถนน ซอย หรือชุมชน</label>
+      <div class="search-box">
+        <span class="ms" aria-hidden="true">search</span>
+        <input id="q" type="text" autocomplete="off" placeholder="เช่น รามคำแหง, ลาดพร้าว, นวมินทร์" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list">
+        <button class="icon-btn" id="clear" type="button" aria-label="ล้างคำค้น" hidden><span class="ms">close</span></button>
+      </div>
+      <ul class="sugg" id="sugg" role="listbox" aria-label="ถนนที่ตรงกับคำค้น"></ul>
+    </div>
+    <div class="quick" id="quick"><button class="chip loc" id="locbtn" type="button"><span class="ms" aria-hidden="true">my_location</span>ใกล้ฉัน</button><span>ถนนที่มีรายงานมากที่สุด</span></div>
+
+    <div class="answer" id="answer" aria-live="polite"></div>
+
+    <div class="overview">
+      <h2>ภาพรวมตอนนี้</h2>
+      <p class="sub" id="ovsub"></p>
+      <div class="tally" id="tally"></div>
+      <ul class="list" id="list"></ul>
+      <button class="more" id="more" type="button" hidden></button>
+    </div>
+  </section>
+
+  <aside class="mapcol">
+    <div class="mapcard">
+      <div class="maphead">
+        <h2>แผนที่</h2>
+        <div class="ctrl">
+          <button type="button" id="zin" aria-label="ซูมเข้า"><span class="ms">add</span></button>
+          <button type="button" id="zout" aria-label="ซูมออก"><span class="ms">remove</span></button>
+          <button type="button" id="zreset" aria-label="ดูทั้งกรุงเทพฯ"><span class="ms">fit_screen</span></button>
+        </div>
+      </div>
+      <div class="mapbox"><svg id="map" viewBox="0 0 800 620" role="img" aria-label="แผนที่ถนนที่มีน้ำท่วม แตะเส้นหรือจุดเพื่อดูคำตอบของถนนนั้น"></svg></div>
+      <div class="legend">
+        <div class="lr"><span>สี = คำตอบ</span>
+          <span><span class="dot" style="--c:var(--avoid)"></span> เลี่ยง</span>
+          <span><span class="dot" style="--c:var(--caution)"></span> ระวัง</span>
+          <span><span class="dot" style="--c:var(--pass)"></span> ผ่านได้</span></div>
+        <div class="lr"><span>รูปทรง = ที่มา</span>
+          <span><svg width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="5" fill="var(--muted)" stroke="var(--surface)" stroke-width="2"/></svg> วัดจากเซ็นเซอร์</span>
+          <span><svg width="28" height="10" aria-hidden="true"><line x1="2" y1="5" x2="26" y2="5" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/></svg> เขตรายงาน</span>
+          <span><svg width="28" height="10" aria-hidden="true"><line x1="2" y1="5" x2="26" y2="5" stroke="var(--muted)" stroke-width="4" stroke-dasharray="4 4"/></svg> ตำแหน่งโดยประมาณ</span>
+          <span><svg width="16" height="16" aria-hidden="true"><rect x="4" y="4" width="8" height="8" transform="rotate(45 8 8)" fill="var(--surface)" stroke="var(--muted)" stroke-width="2"/></svg> คนแจ้งผ่าน iTIC</span></div>
+        <div>แผนที่ฐาน © OpenStreetMap contributors</div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="criteria" aria-labelledby="crit-h">
+    <h2 id="crit-h">หน้านี้ตัดสินอย่างไร</h2>
+    <div class="cgrid">
+      <div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>คำตอบ</th><th>จากเซ็นเซอร์</th><th>จากรายงานเขต</th><th>จากคนแจ้ง (iTIC)</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="--c:var(--avoid)"></span> เลี่ยง</td><td>น้ำสูงกว่า 15 ซม.</td><td>"น้ำท่วมสูง", "สัญจรไม่ได้" หรือ "รถใหญ่สัญจรได้"</td><td>ไม่ใช้ตัดสิน</td></tr>
+            <tr><td><span class="dot" style="--c:var(--caution)"></span> ระวัง</td><td>6 ถึง 15 ซม.</td><td>"น้ำท่วม รถเล็กสัญจรได้"</td><td>ทุกรายงานน้ำท่วม เพราะไม่รู้ความลึก</td></tr>
+            <tr><td><span class="dot" style="--c:var(--pass)"></span> ผ่านได้</td><td>ไม่เกิน 5 ซม. หรือปกติ</td><td>"น้ำท่วมเล็กน้อย" หรือ "สัญจรได้"</td><td>ไม่ใช้ตัดสิน</td></tr>
+          </tbody>
+        </table></div>
+        <p>ถนนหนึ่งเส้นมีได้หลายช่วง คำตอบของถนนใช้ช่วงที่แย่ที่สุด ถ้าเซ็นเซอร์กับรายงานเขตให้ผลต่างกัน หน้านี้เลือกผลที่ระมัดระวังกว่าและแจ้งให้เห็น <span class="assume">สมมติฐาน</span></p>
+        <p>เกณฑ์ ซม. ตั้งไว้สำหรับรถเก๋งทั่วไป ยังไม่ได้ยืนยันกับแหล่งอ้างอิงทางการ <span class="assume">ต้อง validate</span></p>
+      </div>
+      <div>
+        <p><strong style="color:var(--ink)">ความสดของข้อมูล</strong></p>
+        <ul>
+          <li>เซ็นเซอร์: สดภายใน 1 ชม., เริ่มเก่าเมื่อเกิน 1 ชม., เก่าเมื่อเกิน 2 ชม.</li>
+          <li>รายงานเขต: สดภายใน 3 ชม., เริ่มเก่าเมื่อเกิน 3 ชม., เก่าเมื่อเกิน 6 ชม.</li>
+          <li>คนแจ้งผ่าน iTIC: สดภายใน 1 ชม., เก่าเมื่อเกิน 2 ชม., เกิน 3 ชม. ไม่นำมาตัดสินแล้ว ตัดรายงานที่เป็นคำถามทิ้ง และไม่แสดงชื่อคนแจ้ง</li>
+          <li>ถนนที่ไม่มีจุดวัดและไม่อยู่ในรายงาน ตอบว่า "ไม่มีข้อมูล" ไม่ตอบว่าผ่านได้</li>
+        </ul>
+        <p>ข้อมูล: ระบบตรวจวัดน้ำท่วมถนน กทม. (snapshot 09:40), รายการถนนที่ยังมีน้ำท่วมขังจากสำนักงานเขต (08:35) และรายงานน้ำท่วมจาก iTIC / Longdo Traffic ที่ดึงล่าสุดเมื่อ <span id="fetched"></span> วันที่ 28 ก.ย. 2569</p>
+        <div class="demo" role="group" aria-label="จำลองเวลาที่เปิดดู">
+          <span style="font-size:14px;color:var(--muted)">ลองดูเมื่อข้อมูลล่าสุดมีอายุต่างกัน (เดโม)</span>
+          <button class="chip" type="button" data-sim="real" aria-pressed="true">เวลาจริง</button>
+          <button class="chip" type="button" data-sim="20">20 นาที</button>
+          <button class="chip" type="button" data-sim="90">1.5 ชม.</button>
+          <button class="chip" type="button" data-sim="200">3 ชม.</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const DATA = __DATA__;
+const BUILD_ID = "__BUILD__";
+const ROADS = DATA.roads, META = DATA.meta, BASE = DATA.base;
+const ST = {
+  avoid:{word:"เลี่ยง", icon:"block", cls:"st-avoid", short:"ควรเลี่ยง"},
+  caution:{word:"ระวัง", icon:"warning", cls:"st-caution", short:"ระวัง"},
+  pass:{word:"ผ่านได้", icon:"check_circle", cls:"st-pass", short:"ผ่านได้"},
+  none:{word:"ไม่มีข้อมูล", icon:"help", cls:"st-none", short:"ไม่มีข้อมูล"}
+};
+const RANK = {avoid:3,caution:2,pass:1};
+const CONF = {
+  confirmed:{t:"วัดจากเซ็นเซอร์", i:"sensors"},
+  reported:{t:"เขตรายงาน", i:"assignment"},
+  approx:{t:"ตำแหน่งโดยประมาณ", i:"location_searching"},
+  crowd:{t:"คนแจ้งผ่าน iTIC", i:"campaign"}
+};
+const SRC_ORDER = {sensor:0, report:1, itic:2};
+const TH_MON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const $ = s => document.querySelector(s);
+const esc = t => String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- time + freshness ---------- */
+const T_SENSOR = new Date(META.sensorTs), T_REPORT = new Date(META.reportTs), T_ITIC = META.iticLatest ? new Date(META.iticLatest) : null;
+const T_BASE = new Date(Math.max(T_SENSOR, T_REPORT, T_ITIC||0));
+let sim = "real";
+function now(){ return sim==="real" ? new Date() : new Date(T_BASE.getTime() + Number(sim)*60000); }
+const ITIC_EXPIRE = META.iticWindow || 180;
+function ageMin(e){ const t = e.src==="sensor"?T_SENSOR : e.src==="report"?T_REPORT : new Date(e.t); return Math.max(0,(now()-t)/60000); }
+function expired(e){ return e.src==="itic" && ageMin(e) > ITIC_EXPIRE; }
+ROADS.forEach(r=>r.ev.sort((a,b)=> RANK[b.st]-RANK[a.st] || SRC_ORDER[a.src]-SRC_ORDER[b.src]));
+function recompute(){
+  ROADS.forEach(r=>{ const act=r.ev.filter(e=>!expired(e)); r.act=act; r.st = act.length ? act.reduce((m,e)=>RANK[e.st]>RANK[m]?e.st:m,"pass") : null; });
+}
+function hhmm(d){ return d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Asia/Bangkok"}); }
+function thDate(d){ const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Bangkok",day:"numeric",month:"numeric",year:"numeric"}).formatToParts(d); const g=k=>+p.find(x=>x.type===k).value; return g("day")+" "+TH_MON[g("month")-1]+" "+(g("year")+543); }
+function agoText(mins){
+  if (mins < 1) return "เพิ่งวัด";
+  if (mins < 60) return Math.round(mins)+" นาทีก่อน";
+  if (mins < 1440){ const h=Math.floor(mins/60), m=Math.floor((mins%60)/10)*10; return h+" ชม."+(m?" "+m+" นาที":"")+"ก่อน"; }
+  return Math.floor(mins/1440)+" วันก่อน";
+}
+function level(mins, okMax, agingMax){ return mins<=okMax ? "ok" : mins<=agingMax ? "aging" : "stale"; }
+const LEVEL_TXT = {ok:"สด", aging:"เริ่มเก่า", stale:"เก่า"};
+let fs = {};
+function freshness(){
+  const n = now();
+  const sm = (n - T_SENSOR)/60000, rm = (n - T_REPORT)/60000;
+  const im = T_ITIC ? Math.max(0,(n - T_ITIC)/60000) : null;
+  fs = {sm, rm, s:level(sm,60,120), r:level(rm,180,360), im, i: im==null?"stale":level(im,60,120)};
+  recompute();
+  $("#freshrow").innerHTML =
+    `<span class="src"><span class="ms" aria-hidden="true">sensors</span>เซ็นเซอร์วัดเมื่อ <b>${hhmm(T_SENSOR)}</b> <span class="age fresh-${fs.s}">${LEVEL_TXT[fs.s]}, ${esc(agoText(sm))}</span></span>`+
+    `<span class="src"><span class="ms" aria-hidden="true">assignment</span>รายงานเขตเมื่อ <b>${hhmm(T_REPORT)}</b> <span class="age fresh-${fs.r}">${LEVEL_TXT[fs.r]}, ${esc(agoText(rm))}</span></span>`+
+    (T_ITIC ? `<span class="src"><span class="ms" aria-hidden="true">campaign</span>คนแจ้งล่าสุด <b>${hhmm(T_ITIC)}</b> <span class="age fresh-${fs.i}">${LEVEL_TXT[fs.i]}, ${esc(agoText(im))}</span></span>` : "")+
+    `<span class="src fresh-date" style="color:var(--muted)">${thDate(T_SENSOR)}</span>`;
+  const stale = fs.s==="stale";
+  $("#stalebanner").classList.toggle("on", stale);
+  document.documentElement.style.setProperty("--barh", $("#freshbar").offsetHeight+"px");
+  if (stale) $("#staletext").textContent = `ข้อมูลเซ็นเซอร์มีอายุ ${agoText(sm)} ระดับน้ำจริงอาจเปลี่ยนไปแล้ว ใช้คำตอบนี้ประกอบการตัดสินใจเท่านั้น และเช็กสภาพถนนจริงก่อนออกเดินทาง`;
+}
+
+/* ---------- search ---------- */
+const norm = s => (s||"").toLowerCase().replace(/\s+/g,"").replace(/^ถนน|^ถ\./,"").replace(/^ซอย/,"ซ.");
+ROADS.forEach(r=>{ r._n = norm(r.name); r._k = norm(r.key); });
+function find(q){
+  const n = norm(q); if (!n) return [];
+  const bare = n.replace(/^ซ\./,"");
+  return ROADS.filter(r => r.st && (r._n.includes(n) || r._k.includes(n) || r._n.replace(/^ซ\./,"").includes(bare)))
+    .sort((a,b)=> (a._k.startsWith(bare)?0:1)-(b._k.startsWith(bare)?0:1) || RANK[b.st]-RANK[a.st]);
+}
+const q=$("#q"), sugg=$("#sugg"), clearBtn=$("#clear");
+let active=-1, current=[];
+function showSugg(){
+  current = find(q.value).slice(0,8); active=-1;
+  clearBtn.hidden = !q.value;
+  if (!q.value.trim()){ sugg.classList.remove("on"); q.setAttribute("aria-expanded","false"); return; }
+  sugg.innerHTML = current.length ? current.map((r,i)=>
+    `<li role="option" id="o${i}" aria-selected="false" data-k="${esc(r.key)}"><span class="dot ${ST[r.st].cls}"></span><span>${esc(r.name)}</span><span class="d">${esc(ST[r.st].short)}</span></li>`).join("")
+    : `<li role="option" aria-selected="false" data-none="1"><span class="dot st-none"></span><span>ดูคำตอบของ "${esc(q.value.trim())}"</span></li>`;
+  sugg.classList.add("on"); q.setAttribute("aria-expanded","true");
+}
+function choose(li){
+  if (!li) return;
+  if (li.dataset.none) answerNone(q.value.trim()); else select(li.dataset.k, true);
+  sugg.classList.remove("on"); q.setAttribute("aria-expanded","false");
+}
+q.addEventListener("input", showSugg);
+q.addEventListener("keydown", e=>{
+  const items=[...sugg.querySelectorAll("li")];
+  if (e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(!items.length) return;
+    active = (active + (e.key==="ArrowDown"?1:-1) + items.length) % items.length;
+    items.forEach((li,i)=>li.setAttribute("aria-selected", i===active)); q.setAttribute("aria-activedescendant", items[active].id||""); }
+  else if (e.key==="Enter"){ e.preventDefault(); if (!q.value.trim()) return; choose(items[active>=0?active:0]); }
+  else if (e.key==="Escape"){ sugg.classList.remove("on"); }
+});
+sugg.addEventListener("mousedown", e=>{ const li=e.target.closest("li"); if(li){ e.preventDefault(); choose(li); } });
+document.addEventListener("click", e=>{ if(!e.target.closest(".search")) sugg.classList.remove("on"); });
+clearBtn.addEventListener("click", ()=>{ q.value=""; showSugg(); selected=null; hl=null; nearMode=false; renderAnswer(); drawOver(); fitAll(); q.focus(); });
+
+/* quick chips: roads with most evidence */
+recompute();
+[...ROADS].filter(r=>r.kind==="road"&&r.st).sort((a,b)=>b.ev.length-a.ev.length).slice(0,5).forEach(r=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=r.name;
+  b.addEventListener("click",()=>select(r.key,true)); $("#quick").appendChild(b);
+});
+
+/* ---------- trend (phase 2) ---------- */
+const SNAP = META.snaps.map(x=>new Date(x+":00+07:00"));
+const BL_LABEL = thDateShort(SNAP[0])+" "+hhmm(SNAP[0]);
+function thDateShort(d){ const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Bangkok",day:"numeric",month:"numeric"}).formatToParts(d); const g=k=>+p.find(x=>x.type===k).value; return g("day")+" "+TH_MON[g("month")-1]; }
+const TR = {
+  better:{t:"น้ำลด",i:"trending_down"}, cleared:{t:"ไม่ท่วมแล้ว",i:"check"},
+  worse:{t:"น้ำสูงขึ้น",i:"trending_up"}, new:{t:"ท่วมใหม่",i:"priority_high"},
+  same:{t:"ทรงตัว",i:"trending_flat"}, na:{t:"ยังเทียบไม่ได้",i:"horizontal_rule"}
+};
+function evTrend(e){
+  if (e.src!=="sensor" || !e.h) return "na";
+  const a=e.h[0], b=e.h[e.h.length-1];
+  if (a>0 && b===0) return "cleared"; if (a===0 && b>0) return "new";
+  return b<a ? "better" : b>a ? "worse" : "same";
+}
+function roadTrend(r){
+  const t = r.ev.filter(e=>e.src==="sensor").map(evTrend);
+  if (!t.length) return {k:"na", c:{}, label:TR.na.t};
+  const c={}; t.forEach(k=>c[k]=(c[k]||0)+1);
+  const down=(c.better||0)+(c.cleared||0);
+  let k, label;
+  if (c.worse||c.new){ k="worse"; label=down?"ขึ้นบางจุด":TR.worse.t; }
+  else if (down && c.cleared===t.length){ k="cleared"; label=TR.cleared.t; }
+  else if (down && c.same){ k="better"; label="เริ่มลด"; }
+  else if (down){ k="better"; label=TR.better.t; }
+  else { k="same"; label=TR.same.t; }
+  return {k, c, label};
+}
+function roadTrendTag(r){ const t=roadTrend(r); return t.k==="na"?"":trendTag(t.k,t.label); }
+function trendTag(k, label){ return `<span class="trend tr-${k}"><span class="ms" aria-hidden="true">${TR[k].i}</span>${esc(label||TR[k].t)}</span>`; }
+function spark(h){
+  const W=64,H=18,mx=Math.max(20,...h), n=h.length;
+  const pts=h.map((v,i)=>[(i/(n-1))*(W-4)+2, H-2-(v/mx)*(H-4)]);
+  const last=pts[n-1];
+  return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linejoin="round"/><circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.6" fill="var(--c)"/></svg>`;
+}
+function roadTrendText(r){
+  const t=roadTrend(r);
+  if (t.k==="na") return trendTag("na","รายงานเขตมีรอบเดียว ยังเทียบไม่ได้");
+  const parts=[]; const c=t.c;
+  if (c.cleared) parts.push(`ไม่ท่วมแล้ว ${c.cleared} จุด`);
+  if (c.better) parts.push(`น้ำลด ${c.better} จุด`);
+  if (c.worse) parts.push(`น้ำสูงขึ้น ${c.worse} จุด`);
+  if (c.new) parts.push(`ท่วมใหม่ ${c.new} จุด`);
+  if (c.same) parts.push(`ทรงตัว ${c.same} จุด`);
+  return `${trendTag(t.k, t.label)}<span>เทียบ ${BL_LABEL}: ${parts.join(", ")}</span>`;
+}
+
+/* ---------- answer ---------- */
+let selected = null, hl = null;
+function counts(r){ const c={avoid:0,caution:0,pass:0}; (r.act||r.ev).forEach(e=>c[e.st]++); return c; }
+function conflict(r){
+  const s = r.ev.filter(e=>e.src==="sensor"), p = r.ev.filter(e=>e.src==="report");
+  if (!s.length || !p.length) return null;
+  const sMax = Math.max(...s.map(e=>RANK[e.st])), pMax = Math.max(...p.map(e=>RANK[e.st]));
+  if (Math.abs(sMax-pMax) < 2) return null;
+  return sMax < pMax ? "report" : "sensor";
+}
+function evTime(e){ return e.src==="sensor" ? hhmm(T_SENSOR) : e.src==="report" ? hhmm(T_REPORT) : hhmm(new Date(e.t)); }
+function evStale(e){ return e.src==="sensor" ? fs.s : e.src==="report" ? fs.r : level(ageMin(e),60,120); }
+function reason(r){
+  const act=r.act||r.ev, w=act[0];
+  const seg = x => x && !/^ทั้ง/.test(x) ? " ช่วง "+esc(x.replace(/^ช่วง\s*/,"")) : "";
+  if (w.src==="sensor"){
+    if (w.st==="pass") return w.cm ? `จุดวัด${seg(w.where)} น้ำ ${w.cm} ซม. ถือว่าผ่านได้` : `จุดวัดบนถนนนี้ระดับน้ำปกติ`;
+    return `จุดวัด${seg(w.where)} น้ำสูง ${w.cm} ซม.` + (w.st==="caution" ? " รถเก๋งผ่านได้ถ้าขับช้า รถเล็กเสี่ยง" : "");
+  }
+  if (w.src==="report"){
+    if (w.st==="pass") return `เขตรายงานว่า${esc(w.lab||"สัญจรได้")}${seg(w.where)}`;
+    return `เขตรายงานว่า${esc(w.lab||"น้ำท่วม")}${seg(w.where)}`;
+  }
+  return `มีคนแจ้งน้ำท่วมผ่าน iTIC ${w.n>1?w.n+" ครั้ง ":""}ล่าสุด ${hhmm(new Date(w.t))} แต่ยังไม่รู้ความลึก`;
+}
+function renderAnswer(){
+  const box = $("#answer");
+  if (nearMode && me){ renderNear(); return; }
+  if (!selected){
+    const c={avoid:0,caution:0,pass:0}; ROADS.forEach(r=>{ if(r.st) c[r.st]++; });
+    box.className="answer";
+    box.innerHTML = `<div class="ans-body" style="padding-top:18px"><p class="why" style="margin:0"><strong>ยังไม่ได้เลือกถนน</strong><br><span style="color:var(--muted)">ค้นหาถนนด้านบน หรือแตะเส้นบนแผนที่ ตอนนี้มี ${c.avoid} ถนน ซอย และชุมชนที่ควรเลี่ยง</span></p></div>`;
+    return;
+  }
+  const r = selected;
+  if (!r.st){ answerNone(r.name, true); return; }
+  const c = counts(r), cf = conflict(r);
+  const stale = r.act.some(e=>evStale(e)==="stale");
+  const where = r.d ? `เขต${esc(r.d.replace(/, /g,", เขต"))}` : (r.kind==="community"?"ชุมชน":"");
+  const mix = ["avoid","caution","pass"].filter(k=>c[k]).map(k=>`<i class="${ST[k].cls}"><span class="dot"></span>${ST[k].short} ${c[k]} ช่วง</i>`).join("");
+  box.className = "answer";
+  box.innerHTML = `
+    <div class="plate ${ST[r.st].cls}${stale?" stale":""}">
+      <span class="ms" aria-hidden="true">${ST[r.st].icon}</span>
+      <div><div class="word">${ST[r.st].word}</div><div class="who"><strong>${esc(r.name)}</strong>${where?" "+where:""}</div></div>
+    </div>
+    <div class="ans-body">
+      <p class="why">${reason(r)}</p>
+      <div class="trendline">${roadTrendText(r)}</div>
+      ${r.ev.length>1 ? `<div class="mix">${mix}</div>` : ""}
+      ${cf ? `<div class="conflict"><span class="ms" aria-hidden="true">compare_arrows</span><span>${cf==="report"
+          ? "เซ็นเซอร์วัดได้น้อยกว่าที่เขตรายงาน อาจเพราะจุดวัดอยู่คนละช่วงกับที่ท่วม หน้านี้จึงยึดรายงานเขตซึ่งระมัดระวังกว่า"
+          : "เขตรายงานว่าสัญจรได้ แต่เซ็นเซอร์ยังวัดน้ำได้สูง หน้านี้จึงยึดค่าเซ็นเซอร์ซึ่งระมัดระวังกว่า"}</span></div>` : ""}
+      ${stale ? `<div class="conflict" style="background:var(--avoid-soft)"><span class="ms" style="color:var(--avoid)" aria-hidden="true">history_toggle_off</span><span>คำตอบนี้อิงข้อมูลที่เก่าเกินเกณฑ์ ควรเช็กสภาพถนนจริงก่อนออกเดินทาง</span></div>` : ""}
+      <ul class="ev">${r.act.map(e=>{
+        const cn=CONF[e.conf];
+        const title = e.src==="sensor" ? esc(e.where) : esc(e.where);
+        const value = e.src==="sensor" ? (e.cm ? `${e.cm} ซม.` : "ระดับปกติ") : e.src==="itic" ? `${e.n} รายงาน, ไม่รู้ความลึก` : esc(e.lab||"");
+        return `<li class="${ST[e.st].cls}"><span class="bar"></span>
+          <span class="t">${title}<small>${value}</small></span>
+          <span class="meta">${e.src==="sensor"?spark(e.h)+trendTag(evTrend(e), evTrend(e)==="same"?null:`${TR[evTrend(e)].t} ${e.h[0]} → ${e.h[e.h.length-1]} ซม.`):""}<span class="tag ${e.conf}"><span class="ms" aria-hidden="true">${cn.i}</span>${cn.t}</span><span>เมื่อ ${evTime(e)}</span>${e.code?`<span>รหัส ${esc(e.code)}</span>`:""}</span>
+          ${e.note?`<p class="note">${esc(e.note)}</p>`:""}</li>`;}).join("")}</ul>
+    </div>`;
+}
+function answerNone(text, expiredOnly){
+  if (!expiredOnly) selected=null;
+  const box=$("#answer");
+  box.innerHTML = `
+    <div class="plate st-none"><span class="ms" aria-hidden="true">help</span><div><div class="word">ไม่มีข้อมูล</div><div class="who"><strong>${esc(text)}</strong></div></div></div>
+    <div class="ans-body nodata">
+      <p>${expiredOnly ? `รายงานของที่นี่เกิน ${Math.round(ITIC_EXPIRE/60)} ชม. แล้ว จึงไม่นำมาตัดสิน` : `ถนนนี้ไม่มีจุดวัดที่พบน้ำท่วม ไม่อยู่ในรายงานของเขตรอบ ${hhmm(T_REPORT)} และไม่มีคนแจ้งในช่วง ${Math.round(ITIC_EXPIRE/60)} ชม.`}</p>
+      <p style="color:var(--muted)">ไม่ได้แปลว่าไม่ท่วม เพราะหลายถนนไม่มีจุดวัด ลองค้นถนนสายหลักที่ต้องผ่านไปถึงถนนนี้ หรือเช็กจากแหล่งอื่นก่อนออกเดินทาง</p>
+    </div>`;
+  if (!expiredOnly){ drawOver(); fitAll(); }
+}
+function select(key, fromUser){
+  hl = null; nearMode = false;
+  selected = ROADS.find(r=>r.key===key) || null;
+  if (selected){ q.value = selected.name; clearBtn.hidden=false; }
+  renderAnswer(); drawOver();
+  if (selected) fitRoad(selected);
+  if (fromUser && window.matchMedia("(max-width:959px)").matches) $("#answer").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth", block:"start"});
+}
+
+/* ---------- overview list ---------- */
+let filter = "avoid", showAll = false;
+function renderList(){
+  const c={avoid:0,caution:0,pass:0}; ROADS.forEach(r=>{ if(r.st) c[r.st]++; });
+  const H0=META.hist[0], H1=META.hist[META.hist.length-1];
+  const all=ROADS.flatMap(r=>r.ev.filter(e=>e.src==="sensor").map(evTrend)); const tc={}; all.forEach(k=>tc[k]=(tc[k]||0)+1);
+  const iticN = ROADS.reduce((m,r)=>m+r.act.filter(e=>e.src==="itic").reduce((a,e)=>a+e.n,0),0);
+  $("#ovsub").innerHTML = `${ROADS.filter(r=>r.st).length} ถนน ซอย และพื้นที่ที่มีข้อมูล รวมคนแจ้งผ่าน iTIC ${iticN} รายงานในช่วง ${Math.round(ITIC_EXPIRE/60)} ชม.<br>เทียบ ${BL_LABEL}: ถนนที่เซ็นเซอร์พบน้ำ ${H0.roads} → ${H1.roads} เส้น, น้ำลดหรือหายแล้ว ${(tc.better||0)+(tc.cleared||0)} จุด, สูงขึ้น ${tc.worse||0} จุด, ท่วมใหม่ ${tc.new||0} จุด`;
+  $("#tally").innerHTML = ["avoid","caution","pass"].map(k=>`<button type="button" class="${ST[k].cls}" data-f="${k}" aria-pressed="${filter===k}"><b>${c[k]}</b><span>${ST[k].short}</span></button>`).join("");
+  const KO={road:0,soi:1,community:2};
+  const rows = ROADS.filter(r=>r.st===filter).sort((a,b)=>(KO[a.kind]??3)-(KO[b.kind]??3) || b.ev.length-a.ev.length || a.name.localeCompare(b.name,"th"));
+  const shown = showAll ? rows : rows.slice(0,8);
+  $("#list").innerHTML = shown.map(r=>{
+    const srcs=[...new Set(r.act.map(e=>e.conf))];
+    const cf=conflict(r);
+    return `<li class="${ST[r.st].cls}"><button class="row" type="button" data-k="${esc(r.key)}"><span class="bar"></span>
+      <span><span class="nm">${esc(r.name)}</span><span class="ds">${r.d?"เขต"+esc(r.d.replace(/, /g,", เขต"))+" ":""}${r.act.length} ช่วงที่มีข้อมูล</span></span>
+      <span class="rt">${(()=>{const t=roadTrend(r); return t.k==="na"?"":`<span class="trend tr-${t.k}" title="${t.label}"><span class="ms" aria-label="${t.label}">${TR[t.k].i}</span></span>`;})()}${cf?`<span class="ms" title="แหล่งข้อมูลไม่ตรงกัน" aria-label="แหล่งข้อมูลไม่ตรงกัน">compare_arrows</span>`:""}${srcs.map(s=>`<span class="ms" title="${CONF[s].t}" aria-label="${CONF[s].t}">${CONF[s].i}</span>`).join("")}<span class="ms" aria-hidden="true">chevron_right</span></span></button></li>`;}).join("");
+  const more=$("#more"); more.hidden = rows.length<=8;
+  more.textContent = showAll ? "แสดงน้อยลง" : `ดูทั้งหมด ${rows.length} รายการ`;
+}
+$("#tally").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; filter=b.dataset.f; showAll=false; renderList(); });
+$("#list").addEventListener("click",e=>{ const b=e.target.closest(".row"); if(b) select(b.dataset.k,true); });
+$("#more").addEventListener("click",()=>{ showAll=!showAll; renderList(); });
+
+/* ---------- map ---------- */
+const B = {lat0:13.95, lat1:13.64, lng0:100.40, lng1:100.81, W:800, H:620};
+const P = ([la,ln]) => [ (ln-B.lng0)/(B.lng1-B.lng0)*B.W, (B.lat0-la)/(B.lat0-B.lat1)*B.H ];
+const svg = $("#map"), NS="http://www.w3.org/2000/svg";
+const el=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const COL = {avoid:"var(--avoid)",caution:"var(--caution)",pass:"var(--pass)"};
+let V = {x:0,y:0,w:800,h:620};
+const gBase=el("g",{}), gOver=el("g",{}), gLab=el("g",{});
+function drawBase(){
+  gBase.appendChild(el("rect",{x:-2000,y:-2000,width:4800,height:4600,fill:"var(--map-land)"}));
+  const L=(d,s,w,o)=>gBase.appendChild(el("path",{d,fill:"none",stroke:s,"stroke-width":w,opacity:o||1,"vector-effect":"non-scaling-stroke","stroke-linecap":"round","stroke-linejoin":"round"}));
+  L(BASE.canal2,"var(--canal)",0.8,.55); L(BASE.sec,"var(--map-road)",1); L(BASE.tr,"var(--map-road)",2); L(BASE.mw,"var(--map-mw)",3);
+  L(BASE.canal,"var(--canal)",2); L(BASE.river,"var(--river)",6);
+  svg.append(gBase,gOver,gLab);
+}
+function labels(){
+  gLab.innerHTML=""; const k=V.w/800;
+  const add=(x,y,t,cls,rot,size)=>{ const e=el("text",{x,y,class:"maplabel "+cls,"text-anchor":"middle","dominant-baseline":"central","font-size":size*k,"stroke-width":3*k}); if(rot) e.setAttribute("transform",`rotate(${rot} ${x} ${y})`); e.textContent=t; gLab.appendChild(e); };
+  if (V.w < 500) BASE.lab.forEach(([n,x,y,a])=>add(x,y,n,"clab",a,11));
+  DATA.districts.forEach(([n,la,ln])=>{ const [x,y]=P([la,ln]); add(x,y,n,"",0,12); });
+}
+function pathD(seg){ return seg.map((p,i)=>(i?"L":"M")+P(p).map(v=>v.toFixed(1)).join(",")).join(" "); }
+function drawOver(){
+  gOver.innerHTML=""; const k=V.w/800;
+  const lines=el("g",{}), dots=el("g",{});
+  const order=ROADS.filter(r=>r.st).sort((a,b)=>RANK[a.st]-RANK[b.st]);
+  if (selected && order.includes(selected)) { order.splice(order.indexOf(selected),1); order.push(selected); }
+  if (hl) order.sort((a,b)=>(hl.has(a.key)?1:0)-(hl.has(b.key)?1:0));
+  order.forEach(r=>{
+    const dim = (selected && r!==selected) || (hl && !hl.has(r.key)), sel = r===selected || (hl && hl.has(r.key));
+    const op = dim ? .22 : 1;
+    r.act.forEach(e=>{
+      if (e.src==="itic"){
+        const [x,y]=P(e.pt), h=(sel?6.5:5.2)*k;
+        dots.appendChild(el("rect",{x:x-h,y:y-h,width:2*h,height:2*h,transform:`rotate(45 ${x} ${y})`,fill:"var(--surface)",stroke:COL[e.st],"stroke-width":2.4*k,opacity:op,class:"hit","data-k":r.key}));
+        return;
+      }
+      if (e.src==="report"){
+        e.g.forEach(seg=>{
+          const d=pathD(seg);
+          lines.appendChild(el("path",{d,fill:"none",stroke:"var(--surface)","stroke-width":sel?9:6,"vector-effect":"non-scaling-stroke","stroke-linecap":"round",opacity:op}));
+          const ln=el("path",{d,fill:"none",stroke:COL[e.st],"stroke-width":sel?6:3.5,"vector-effect":"non-scaling-stroke","stroke-linecap":"round","stroke-linejoin":"round",opacity:op});
+          if (e.conf==="approx") ln.setAttribute("stroke-dasharray","5 5");
+          lines.appendChild(ln);
+          const hit=el("path",{d,fill:"none",stroke:"transparent","stroke-width":16,"vector-effect":"non-scaling-stroke",class:"hit","data-k":r.key});
+          lines.appendChild(hit);
+        });
+      } else {
+        const [x,y]=P(e.pt);
+        dots.appendChild(el("circle",{cx:x,cy:y,r:(sel?6.5:4.8)*k,fill:COL[e.st],stroke:"var(--surface)","stroke-width":1.6*k,opacity:op,class:"hit","data-k":r.key}));
+      }
+    });
+  });
+  gOver.append(lines,dots);
+  if (me && inBangkok([me.lat,me.lng])){
+    const [x,y]=P([me.lat,me.lng]), gm=el("g",{"aria-hidden":"true"});
+    gm.appendChild(el("circle",{cx:x,cy:y,r:NEAR_STATUS_M/M_PER_PX,fill:"none",stroke:"var(--water)","stroke-width":1.5,"stroke-dasharray":"4 4","vector-effect":"non-scaling-stroke",opacity:.8}));
+    if (me.acc>30) gm.appendChild(el("circle",{cx:x,cy:y,r:Math.min(me.acc,5000)/M_PER_PX,fill:"var(--water)",opacity:.12}));
+    gm.appendChild(el("circle",{cx:x,cy:y,r:9*k,fill:"var(--water)",stroke:"#fff","stroke-width":3*k}));
+    gOver.appendChild(gm);
+  }
+}
+function setView(v){
+  const minW=40, maxW=1200; v.w=Math.min(maxW,Math.max(minW,v.w)); v.h=v.w*620/800; V=v;
+  svg.setAttribute("viewBox",`${V.x} ${V.y} ${V.w} ${V.h}`); drawOver(); labels();
+}
+function fitAll(){ setView({x:0,y:0,w:800,h:620}); }
+function fitRoads(rs){
+  const pts=[]; rs.forEach(r=>r.act.forEach(e=> e.src!=="report" ? pts.push(P(e.pt)) : e.g.forEach(s=>s.forEach(p=>pts.push(P(p))))));
+  if (!pts.length) return fitAll();
+  fitPts(pts);
+}
+function fitRoad(r){
+  const pts=[]; r.act.forEach(e=> e.src!=="report" ? pts.push(P(e.pt)) : e.g.forEach(s=>s.forEach(p=>pts.push(P(p)))));
+  fitPts(pts);
+}
+function fitPts(pts){
+  let x0=Math.min(...pts.map(p=>p[0])), x1=Math.max(...pts.map(p=>p[0])), y0=Math.min(...pts.map(p=>p[1])), y1=Math.max(...pts.map(p=>p[1]));
+  let w=Math.max(x1-x0,(y1-y0)*800/620)*1.5+60;
+  w=Math.min(w,800); const h=w*620/800;
+  setView({x:(x0+x1)/2-w/2,y:(y0+y1)/2-h/2,w,h});
+}
+function zoom(f,cx,cy){ cx=cx??V.x+V.w/2; cy=cy??V.y+V.h/2; const w=V.w*f; setView({x:cx-(cx-V.x)*f,y:cy-(cy-V.y)*f,w,h:w*620/800}); }
+$("#zin").onclick=()=>zoom(.6); $("#zout").onclick=()=>zoom(1/.6); $("#zreset").onclick=fitAll;
+function toSvg(ev){ const r=svg.getBoundingClientRect(); return [V.x+(ev.clientX-r.left)/r.width*V.w, V.y+(ev.clientY-r.top)/r.height*V.h]; }
+svg.addEventListener("wheel",e=>{ e.preventDefault(); const [x,y]=toSvg(e); zoom(e.deltaY>0?1.2:1/1.2,x,y); },{passive:false});
+const ptrs=new Map(); let moved=0, pinch0=null;
+svg.addEventListener("pointerdown",e=>{ svg.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); moved=0; if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0={d:Math.hypot(a.x-b.x,a.y-b.y),w:V.w}; } svg.classList.add("drag"); });
+svg.addEventListener("pointermove",e=>{
+  if(!ptrs.has(e.pointerId)) return; const prev=ptrs.get(e.pointerId); const r=svg.getBoundingClientRect();
+  if (ptrs.size===2 && pinch0){ ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); if(d>0){ const f=(pinch0.w*pinch0.d/d)/V.w; const cx=V.x+(((a.x+b.x)/2)-r.left)/r.width*V.w, cy=V.y+(((a.y+b.y)/2)-r.top)/r.height*V.h; zoom(f,cx,cy); moved+=5; } return; }
+  const dx=(e.clientX-prev.x)/r.width*V.w, dy=(e.clientY-prev.y)/r.height*V.h; moved+=Math.abs(e.clientX-prev.x)+Math.abs(e.clientY-prev.y);
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); V.x-=dx; V.y-=dy; svg.setAttribute("viewBox",`${V.x} ${V.y} ${V.w} ${V.h}`);
+});
+const up=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=null; if(!ptrs.size) svg.classList.remove("drag");
+  if (e.type==="pointerup" && moved<6){ const t=document.elementFromPoint(e.clientX,e.clientY); const h=t&&t.closest&&t.closest(".hit"); if(h) select(h.dataset.k,true); } };
+svg.addEventListener("pointerup",up); svg.addEventListener("pointercancel",up);
+
+/* ---------- my routes (phase 2) ---------- */
+const RKEY="flood.routes.v1", MAXR=5, MAXSEG=8;
+let routes=[], openRoute=null, editing=null;
+function loadRoutes(){ try{ const v=JSON.parse(localStorage.getItem(RKEY)||"[]"); routes=Array.isArray(v)?v.filter(x=>x&&x.name&&Array.isArray(x.segs)).slice(0,MAXR):[]; }catch(e){ routes=[]; } }
+function saveRoutes(){ try{ localStorage.setItem(RKEY, JSON.stringify(routes)); return true; }catch(e){ return false; } }
+function resolveSeg(sg){ const r = sg.key && ROADS.find(x=>x.key===sg.key); return r && r.st ? r : null; }
+function routeStatus(rt){
+  const rs=rt.segs.map(resolveSeg), known=rs.filter(Boolean), unknown=rs.length-known.length;
+  if (!known.length) return {st:"none", word:"ไม่มีข้อมูล", unknown, rs};
+  const worst=known.reduce((m,r)=>RANK[r.st]>RANK[m]?r.st:m,"pass");
+  if (worst==="pass" && unknown) return {st:"none", word:"ไม่ครบ", unknown, rs, partial:true};
+  return {st:worst, word:ST[worst].word, unknown, rs};
+}
+function routeSummary(rt, s){
+  const bad=s.rs.map((r,i)=>r&&r.st!=="pass"?`${r.name} (${ST[r.st].short})`:null).filter(Boolean);
+  const parts=[];
+  if (bad.length) parts.push(`ติด ${bad.length} ถนน: ${bad.join(", ")}`);
+  else if (!s.partial && s.st!=="none") parts.push("ทุกถนนในเส้นทางผ่านได้");
+  if (s.unknown) parts.push(`ไม่มีข้อมูล ${s.unknown} ถนน`);
+  const stale = s.rs.some(r=>r&&r.act.some(e=>evStale(e)==="stale"));
+  if (stale) parts.push("ข้อมูลเก่าเกินเกณฑ์");
+  return parts.join(", ");
+}
+function renderRoutes(){
+  const box=$("#routes");
+  $("#routes-hint").textContent = routes.length ? `${routes.length} จาก ${MAXR} เส้นทาง` : "";
+  let html="";
+  if (!routes.length && !editing){
+    html=`<div class="rempty"><p>บันทึกเส้นทางที่ใช้ประจำ แล้วหน้านี้จะตอบให้ทันทีเมื่อเปิด<br><span>เช่น บ้าน ไป ออฟฟิศ ผ่านลาดพร้าว รามคำแหง</span></p>
+      <button class="btn" type="button" data-act="new"><span class="ms" aria-hidden="true">add_road</span>เพิ่มเส้นทาง</button>
+      <button class="btn ghost" type="button" data-act="sample">ลองเส้นทางตัวอย่าง</button></div>`;
+  } else {
+    html=`<div class="rcards">${routes.map((rt,i)=>{
+      if (editing && editing.i===i) return editorHTML();
+      const s=routeStatus(rt), open=openRoute===i, cls=ST[s.st].cls;
+      return `<div class="rcard" aria-expanded="${open}">
+        <button class="rtop" type="button" data-act="toggle" data-i="${i}" aria-expanded="${open}">
+          <span class="rsign ${cls}${s.rs.some(r=>r&&r.act.some(e=>evStale(e)==="stale"))?" stale":""}"><span><span class="ms" aria-hidden="true">${s.partial?"help":ST[s.st].icon}</span><span class="w">${s.word}</span></span></span>
+          <span class="rname"><b>${esc(rt.name)}</b><span>${esc(routeSummary(rt,s))}</span></span>
+          <span class="rchev"><span class="ms" aria-hidden="true">expand_more</span></span>
+        </button>
+        <div class="rpath">${s.rs.map((r,j)=>`${j?'<span class="ms" aria-hidden="true">chevron_right</span>':""}<span class="seg ${r?ST[r.st].cls:"st-none"}">${esc(r?r.name:rt.segs[j].label)}</span>`).join("")}</div>
+        ${open?`<div class="rdetail">${s.rs.map((r,j)=>{
+          if(!r) return `<div class="rr st-none" style="cursor:default"><span class="bar"></span><span>${esc(rt.segs[j].label)}<small>ไม่มีจุดวัดและไม่อยู่ในรายงานเขต ไม่ได้แปลว่าไม่ท่วม</small></span><span></span></div>`;
+          const t=roadTrend(r);
+          return `<button class="rr ${ST[r.st].cls}" type="button" data-act="road" data-k="${esc(r.key)}"><span class="bar"></span><span>${esc(r.name)} <b style="font-weight:600;color:var(--c)">${ST[r.st].short}</b><small>${esc(reason(r).replace(/<[^>]+>/g,""))}</small></span><span>${roadTrendTag(r)}</span></button>`;}).join("")}
+          <div class="ractions"><button class="btn ghost" type="button" data-act="edit" data-i="${i}"><span class="ms" aria-hidden="true">edit</span>แก้ไข</button><button class="btn ghost" type="button" data-act="del" data-i="${i}"><span class="ms" aria-hidden="true">delete</span>ลบเส้นทาง</button></div></div>`:""}
+      </div>`;}).join("")}
+      ${editing && editing.i===-1 ? editorHTML() : ""}
+      ${!editing && routes.length<MAXR ? `<div><button class="btn ghost" type="button" data-act="new"><span class="ms" aria-hidden="true">add_road</span>เพิ่มเส้นทาง</button></div>`:""}
+    </div>`;
+  }
+  box.innerHTML=html;
+  if (editing){ const n=$("#ed-name"); if(n && !editing.focused){ n.focus(); editing.focused=true; } }
+}
+function editorHTML(){
+  const e=editing;
+  return `<div class="editor" role="group" aria-label="${e.i===-1?"เพิ่มเส้นทาง":"แก้ไขเส้นทาง"}">
+    <div><label for="ed-name">ชื่อเส้นทาง</label><input id="ed-name" type="text" maxlength="40" value="${esc(e.name)}" placeholder="เช่น บ้าน ไป ออฟฟิศ"></div>
+    <div class="picker"><label for="ed-road">ถนนที่ผ่าน เรียงตามลำดับ</label>
+      <input id="ed-road" type="text" autocomplete="off" placeholder="พิมพ์ชื่อถนนแล้วกด Enter" role="combobox" aria-expanded="false" aria-controls="ed-sugg">
+      <ul class="sugg" id="ed-sugg" role="listbox" aria-label="ถนนที่ตรงกับคำค้น"></ul></div>
+    <div class="echips">${e.segs.length? e.segs.map((sg,j)=>{ const r=resolveSeg(sg); return `<span class="ec ${r?ST[r.st].cls:"st-none"}">${esc(r?r.name:sg.label)}<button type="button" data-act="rmseg" data-j="${j}" aria-label="เอา ${esc(r?r.name:sg.label)} ออก"><span class="ms">close</span></button></span>`; }).join("") : `<span class="empty">ยังไม่มีถนน</span>`}</div>
+    ${e.err?`<p class="err" role="alert">${esc(e.err)}</p>`:""}
+    <div class="row2"><button class="btn ghost" type="button" data-act="cancel">ยกเลิก</button><button class="btn" type="button" data-act="save"><span class="ms" aria-hidden="true">bookmark_add</span>บันทึกเส้นทาง</button></div>
+  </div>`;
+}
+function addSeg(label, key){
+  if (!label) return;
+  if (editing.segs.length>=MAXSEG){ editing.err=`ใส่ได้สูงสุด ${MAXSEG} ถนนต่อเส้นทาง`; renderRoutes(); return; }
+  if (key && editing.segs.some(x=>x.key===key)){ editing.err=""; renderRoutes(); $("#ed-road").focus(); return; }
+  editing.segs.push({label, key:key||null}); editing.err=""; editing.name=$("#ed-name").value;
+  renderRoutes(); $("#ed-road").focus();
+}
+function highlightRoute(i){
+  const s=routeStatus(routes[i]); const rs=s.rs.filter(Boolean);
+  selected=null; hl=new Set(rs.map(r=>r.key)); drawOver(); fitRoads(rs); renderAnswer();
+}
+$("#routes").addEventListener("click", ev=>{
+  const b=ev.target.closest("[data-act]"); if(!b) return;
+  const act=b.dataset.act, i=+b.dataset.i;
+  if (act==="new"){ editing={i:-1,name:"",segs:[],err:""}; openRoute=null; renderRoutes(); }
+  else if (act==="sample"){
+    routes.push({name:"บ้าน ไป ออฟฟิศ (ตัวอย่าง)", segs:[{label:"ถ.โชคชัย 4",key:"โชคชัย 4"},{label:"ถ.ลาดพร้าว",key:"ลาดพร้าว"},{label:"ถ.รามคำแหง",key:"รามคำแหง"},{label:"ถ.สุขุมวิท",key:null}]});
+    saveRoutes(); openRoute=routes.length-1; renderRoutes(); highlightRoute(openRoute);
+  }
+  else if (act==="toggle"){ openRoute = openRoute===i ? null : i; renderRoutes(); if(openRoute!==null) highlightRoute(i); else { hl=null; drawOver(); fitAll(); } }
+  else if (act==="road"){ select(b.dataset.k,true); }
+  else if (act==="edit"){ editing={i, name:routes[i].name, segs:routes[i].segs.map(x=>({...x})), err:""}; renderRoutes(); }
+  else if (act==="del"){ if(confirm(`ลบเส้นทาง "${routes[i].name}"?`)){ routes.splice(i,1); saveRoutes(); openRoute=null; hl=null; renderRoutes(); drawOver(); fitAll(); } }
+  else if (act==="rmseg"){ editing.name=$("#ed-name").value; editing.segs.splice(+b.dataset.j,1); renderRoutes(); }
+  else if (act==="cancel"){ editing=null; renderRoutes(); }
+  else if (act==="save"){
+    const name=$("#ed-name").value.trim();
+    if (!name){ editing.err="ใส่ชื่อเส้นทางก่อนบันทึก"; editing.name=""; renderRoutes(); return; }
+    if (!editing.segs.length){ editing.err="เพิ่มถนนอย่างน้อย 1 เส้น"; editing.name=name; renderRoutes(); return; }
+    const rt={name, segs:editing.segs};
+    if (editing.i===-1) routes.push(rt); else routes[editing.i]=rt;
+    const idx = editing.i===-1 ? routes.length-1 : editing.i;
+    editing=null; const ok=saveRoutes(); openRoute=idx; renderRoutes(); highlightRoute(idx);
+    if (!ok) $("#routes-hint").textContent="บันทึกในเบราว์เซอร์นี้ไม่ได้ เส้นทางจะหายเมื่อปิดหน้า";
+  }
+});
+let edActive=-1, edList=[];
+$("#routes").addEventListener("input", ev=>{
+  if (ev.target.id!=="ed-road") return;
+  const v=ev.target.value.trim(), ul=$("#ed-sugg"); edList=find(v).slice(0,6); edActive=-1;
+  if (!v){ ul.classList.remove("on"); return; }
+  ul.innerHTML = edList.map((r,i)=>`<li role="option" id="eo${i}" aria-selected="false" data-k="${esc(r.key)}"><span class="dot ${ST[r.st].cls}"></span><span>${esc(r.name)}</span><span class="d">${ST[r.st].short}</span></li>`).join("")
+    + `<li role="option" aria-selected="false" data-free="1"><span class="dot st-none"></span><span>เพิ่ม "${esc(v)}" (ยังไม่มีข้อมูล)</span></li>`;
+  ul.classList.add("on");
+});
+$("#routes").addEventListener("keydown", ev=>{
+  if (ev.target.id==="ed-name" && ev.key==="Enter"){ ev.preventDefault(); $("#ed-road").focus(); return; }
+  if (ev.target.id!=="ed-road") return;
+  const ul=$("#ed-sugg"), items=[...ul.querySelectorAll("li")];
+  if ((ev.key==="ArrowDown"||ev.key==="ArrowUp") && items.length){ ev.preventDefault(); edActive=(edActive+(ev.key==="ArrowDown"?1:-1)+items.length)%items.length; items.forEach((li,i)=>li.setAttribute("aria-selected",i===edActive)); }
+  else if (ev.key==="Enter"){ ev.preventDefault(); const v=ev.target.value.trim(); if(!v) return; pickEd(items[edActive>=0?edActive:0], v); }
+  else if (ev.key==="Escape"){ ul.classList.remove("on"); }
+});
+$("#routes").addEventListener("mousedown", ev=>{ const li=ev.target.closest("#ed-sugg li"); if(li){ ev.preventDefault(); pickEd(li, $("#ed-road").value.trim()); } });
+function pickEd(li, v){
+  if (!li) return;
+  if (li.dataset.free){ const lab=v.startsWith("ถ")||v.startsWith("ซ")?v:"ถ."+v; addSeg(lab, null); }
+  else { const r=ROADS.find(x=>x.key===li.dataset.k); addSeg(r.name, r.key); }
+}
+
+/* ---------- my location (viewer) ---------- */
+const NEAR_STATUS_M = 1000, NEAR_LIST_M = 3000, M_PER_PX = 55.6;
+let me = null, nearMode = false;
+function distM(a,b){ const k=Math.cos((a[0]+b[0])/2*Math.PI/180); return Math.hypot((a[0]-b[0])*111320,(a[1]-b[1])*111320*k); }
+function evDist(e,p){ return e.src==="report" ? Math.min(...e.g.flatMap(sg=>sg.map(q=>distM(q,p)))) : distM(e.pt,p); }
+function fmtDist(m){ return m<1000 ? (Math.round(m/50)*50||50)+" ม." : (m%1000<50 ? Math.round(m/1000)+" กม." : (m/1000).toFixed(1)+" กม."); }
+function nearby(p){
+  return ROADS.filter(r=>r.st).map(r=>({r, d:Math.min(...r.act.map(e=>evDist(e,p)))}))
+    .filter(x=>x.d<=NEAR_LIST_M).sort((a,b)=>a.d-b.d);
+}
+function inBangkok(p){ return p[0]<=B.lat0 && p[0]>=B.lat1 && p[1]>=B.lng0 && p[1]<=B.lng1; }
+function renderNear(){
+  const box=$("#answer"), p=[me.lat,me.lng];
+  const acc = me.acc>1000 ? `<div class="conflict"><span class="ms" aria-hidden="true">gps_not_fixed</span><span>ตำแหน่งคลาดเคลื่อนได้ถึง ${fmtDist(me.acc)} รายการด้านล่างอาจไม่ใช่บริเวณที่คุณอยู่จริง</span></div>` : "";
+  const note = `<p class="locnote">ตำแหน่งใช้คำนวณในเครื่องนี้เท่านั้น ไม่ส่งไปที่ใดและไม่บันทึก</p>`;
+  if (!inBangkok(p)){
+    box.innerHTML = `<div class="plate st-none"><span class="ms" aria-hidden="true">location_off</span><div><div class="word">นอกพื้นที่</div><div class="who"><strong>ตำแหน่งของคุณ</strong></div></div></div>
+      <div class="ans-body nodata"><p>ตำแหน่งปัจจุบันอยู่นอกพื้นที่ข้อมูลกรุงเทพฯ ของหน้านี้ ลองค้นชื่อถนนที่จะใช้แทน</p>${note}</div>`;
+    hl=null; drawOver(); return;
+  }
+  const list = nearby(p), close = list.filter(x=>x.d<=NEAR_STATUS_M);
+  const st = close.length ? close.reduce((m,x)=>RANK[x.r.st]>RANK[m]?x.r.st:m,"pass") : null;
+  const word = st ? ST[st].word : "ไม่พบรายงาน", cls = st ? ST[st].cls : "st-none", icon = st ? ST[st].icon : "help";
+  const stale = close.some(x=>x.r.act.some(e=>evStale(e)==="stale"));
+  const why = st
+    ? `ในรัศมี ${fmtDist(NEAR_STATUS_M)} มี ${close.length} ถนนที่มีข้อมูล ใกล้สุดคือ ${esc(close[0].r.name)} (${fmtDist(close[0].d)})`
+    : `ไม่มีจุดวัด รายงานเขต หรือคนแจ้งในรัศมี ${fmtDist(NEAR_STATUS_M)} ไม่ได้แปลว่าไม่ท่วม เพราะหลายถนนไม่มีจุดวัด`;
+  box.innerHTML = `<div class="plate ${cls}${stale?" stale":""}"><span class="ms" aria-hidden="true">${icon}</span><div><div class="word">${word}</div><div class="who"><strong>รอบตัวคุณ ${fmtDist(NEAR_STATUS_M)}</strong> แม่นยำประมาณ ±${fmtDist(me.acc)}</div></div></div>
+    <div class="ans-body"><p class="why">${why}</p>${acc}
+    ${stale?`<div class="conflict" style="background:var(--avoid-soft)"><span class="ms" style="color:var(--avoid)" aria-hidden="true">history_toggle_off</span><span>บางข้อมูลเก่าเกินเกณฑ์ ควรเช็กสภาพถนนจริงก่อนออกเดินทาง</span></div>`:""}
+    ${list.length?`<ul class="near">${list.slice(0,8).map(x=>`<li class="${ST[x.r.st].cls}"><button type="button" data-k="${esc(x.r.key)}"><span class="bar"></span><span>${esc(x.r.name)} <b style="font-weight:600;color:var(--c)">${ST[x.r.st].short}</b><small>${esc(reason(x.r).replace(/<[^>]+>/g,""))}</small></span><span class="dist">${fmtDist(x.d)}</span></button></li>`).join("")}</ul>`
+      : `<p style="color:var(--muted);margin:0">ในรัศมี ${fmtDist(NEAR_LIST_M)} ก็ยังไม่มีข้อมูล</p>`}
+    ${note}</div>`;
+  box.querySelectorAll(".near button").forEach(b=>b.addEventListener("click",()=>{ nearMode=false; select(b.dataset.k,true); }));
+  hl = new Set(list.map(x=>x.r.key)); drawOver();
+}
+function locError(msg){
+  $("#answer").innerHTML = `<div class="plate st-none"><span class="ms" aria-hidden="true">location_disabled</span><div><div class="word">หาตำแหน่งไม่ได้</div></div></div><div class="ans-body nodata"><p>${msg}</p><p style="color:var(--muted)">ลองค้นชื่อถนนด้านบนแทน</p></div>`;
+}
+$("#locbtn").addEventListener("click",()=>{
+  const btn=$("#locbtn");
+  if (!("geolocation" in navigator)){ locError("เบราว์เซอร์นี้ไม่รองรับการหาตำแหน่ง"); return; }
+  btn.setAttribute("aria-busy","true");
+  navigator.geolocation.getCurrentPosition(pos=>{
+    btn.removeAttribute("aria-busy");
+    me={lat:pos.coords.latitude, lng:pos.coords.longitude, acc:pos.coords.accuracy||0};
+    nearMode=true; selected=null; q.value=""; clearBtn.hidden=true;
+    renderNear();
+    const [x,y]=P([me.lat,me.lng]), w=Math.max(NEAR_LIST_M*2.4/M_PER_PX, 90);
+    setView({x:x-w/2,y:y-w*620/800/2,w,h:w*620/800});
+    if (window.matchMedia("(max-width:959px)").matches) $("#answer").scrollIntoView({block:"start"});
+  }, err=>{
+    btn.removeAttribute("aria-busy");
+    locError(err.code===1 ? "ยังไม่ได้รับอนุญาตให้ใช้ตำแหน่ง เปิดสิทธิ์ตำแหน่งให้เว็บนี้ในการตั้งค่าเบราว์เซอร์ แล้วกดอีกครั้ง" : err.code===3 ? "หาตำแหน่งนานเกินไป ลองกดอีกครั้ง" : "หาตำแหน่งไม่ได้ในตอนนี้");
+  }, {enableHighAccuracy:false, timeout:10000, maximumAge:60000});
+});
+
+/* ---------- demo time ---------- */
+document.querySelectorAll("[data-sim]").forEach(b=>b.addEventListener("click",()=>{
+  sim=b.dataset.sim; document.querySelectorAll("[data-sim]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  freshness(); renderList(); if(nearMode&&me) renderNear(); else renderAnswer(); drawOver(); if(!editing) renderRoutes();
+}));
+
+/* ---------- init ---------- */
+document.getElementById("fetched").textContent = hhmm(new Date(META.iticFetched))+" น.";
+loadRoutes(); drawBase(); freshness(); renderList(); renderAnswer(); renderRoutes(); fitAll();
+if (routes.length){ openRoute=0; renderRoutes(); highlightRoute(0); }
+setInterval(()=>{ if(sim==="real"){ freshness(); renderList(); drawOver(); } }, 60000);
+/* ---------- new build check (hosted) ---------- */
+async function checkBuild(){
+  try{
+    const res = await fetch("build.txt?t="+Date.now(), {cache:"no-store"}); if(!res.ok) return;
+    const id = (await res.text()).trim();
+    if (id && id!==BUILD_ID && !document.getElementById("newbuild")){
+      const b=document.createElement("div"); b.id="newbuild"; b.className="stale-banner on"; b.style.background="var(--water)";
+      b.innerHTML='<div class="fresh-in"><span class="ms" aria-hidden="true">sync</span><span>มีข้อมูลรอบใหม่</span><button class="chip" type="button" style="margin-left:auto">โหลดใหม่</button></div>';
+      b.querySelector("button").onclick=()=>location.reload();
+      document.getElementById("freshbar").appendChild(b);
+    }
+  }catch(e){}
+}
+if (location.protocol.startsWith("http")) setInterval(checkBuild, 300000);
+</script>
+</body>
+</html>
